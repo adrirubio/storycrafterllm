@@ -34,7 +34,7 @@ def tokenize_batch(batch):
 
 # Apply tokenization to the train and test datasets
 train_dataset = dataset["train"].map(tokenize_batch, batched=True, remove_columns=["text"])
-test_dataset = dataset["test"].map(tokenize_batch, batched=True, remove_columns=["text"])
+test_dataset = dataset["train"].map(tokenize_batch, batched=True, remove_columns=["text"])
 
 # Update dataset format to include input_ids and attention_mask
 train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
