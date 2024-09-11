@@ -11,8 +11,9 @@ from datetime import datetime
 dataset = load_dataset("bookcorpus")
 
 # Split the dataset into train and test sets
-train_dataset = dataset["train"].train_test_split(test_size=0.1)["train"]
-test_dataset = dataset["train"].train_test_split(test_size=0.1)["test"]
+split_dataset = dataset["train"].train_test_split(test_size=0.1)["train"]
+train_dataset = split_dataset["train"]
+test_dataset = split_dataset["test"]
 
 # Print the size of the train and test sets
 print(f"Train size: {len(train_dataset)}")
@@ -31,10 +32,11 @@ def tokenize_batch(batch):
         max_length=512,
         return_tensors=None
     )
+    return tokenized_output
 
 # Apply tokenization to the train and test datasets
-train_dataset = dataset["train"].map(tokenize_batch, batched=True, remove_columns=["text"])
-test_dataset = dataset["train"].map(tokenize_batch, batched=True, remove_columns=["text"])
+train_dataset = train_dataset.map(tokenize_batch, batched=True, remove_columns=["text"])
+test_dataset = test_dataset.map(tokenize_batch, batched=True, remove_columns=["text"])
 
 # Update dataset format to include input_ids and attention_mask
 train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
@@ -43,4 +45,7 @@ test_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
 # Print some examples
 print(f"Example train data: {train_dataset[0]}")
 print(f"Example test data: {test_dataset[0]}")
+
+
+# 
 
