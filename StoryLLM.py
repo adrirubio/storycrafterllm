@@ -47,5 +47,36 @@ print(f"Example train data: {train_dataset[0]}")
 print(f"Example test data: {test_dataset[0]}")
 
 
-# 
+# Create a custom collate function
+def collate_fn(batch):
+    input_ids = torch.stack([item["input_ids"] for item in batch])
+    attention_mask = torch.stack([item["attention_mask"] for item in batch])
+    return {"input_ids": input_ids, "attention_mask": attention_mask}
+
+# Create batches
+batch_size = 8
+
+train_loader = torch.utils.data.DataLoader(train_dataset,
+                                           batch_size=batch_size,
+                                           shuffle=True,
+                                           collate_fn=collate_fn)
+
+test_loader = torch.utils.data.DataLoader(train_dataset,
+                                          batch_size=batch_size,
+                                          shuffle=False,
+                                          collate_fn=collate_fn)
+
+# Print an example batch
+for batch in train_loader:
+    print(f"Batch input ids shape: {batch["input_ids"].shape}")
+    print(f"Batch attention mask shape: {batch["attention_mask"].shape}")
+    break
+
+
+
+
+
+
+
+
 
