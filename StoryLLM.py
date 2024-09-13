@@ -1,11 +1,19 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from transformers import GPT2Tokenizer
 from datasets import load_dataset
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
+
+# Define hyperparameters
+n_heads = 8
+head_size = 64
+n_embed = 521
+block_size = 128
+dropout = 0.1
 
 # load the BookCorpus dataset
 dataset = load_dataset("bookcorpus")
