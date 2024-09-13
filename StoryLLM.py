@@ -11,7 +11,7 @@ from datetime import datetime
 dataset = load_dataset("bookcorpus")
 
 # Split the dataset into train and test sets
-split_dataset = dataset["train"].train_test_split(test_size=0.1)["train"]
+split_dataset = dataset["train"].train_test_split(test_size=0.1)
 train_dataset = split_dataset["train"]
 test_dataset = split_dataset["test"]
 
@@ -29,10 +29,9 @@ def tokenize_batch(batch):
         batch["text"],
         padding="max_length",
         truncation=True,
-        max_length=512,
-        return_tensors=None
+        max_length=512
     )
-    return tokenized_output
+    return {"input_ids": tokenized_output["input_ids"], "attention_mask": tokenized_output["attention_mask"]}
 
 # Apply tokenization to the train and test datasets
 train_dataset = train_dataset.map(tokenize_batch, batched=True, remove_columns=["text"])
@@ -61,7 +60,7 @@ train_loader = torch.utils.data.DataLoader(train_dataset,
                                            shuffle=True,
                                            collate_fn=collate_fn)
 
-test_loader = torch.utils.data.DataLoader(train_dataset,
+test_loader = torch.utils.data.DataLoader(test_dataset,
                                           batch_size=batch_size,
                                           shuffle=False,
                                           collate_fn=collate_fn)
