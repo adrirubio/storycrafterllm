@@ -11,7 +11,7 @@ from datetime import datetime
 # Define hyperparameters
 n_heads = 8
 head_size = 64
-n_embed = 521
+n_embed = 512
 block_size = 128
 dropout = 0.1
 
@@ -75,16 +75,16 @@ test_loader = torch.utils.data.DataLoader(test_dataset,
 
 # Print an example batch
 for batch in train_loader:
-    print(f"Batch input ids shape: {batch["input_ids"].shape}")
-    print(f"Batch attention mask shape: {batch["attention_mask"].shape}")
+    print(f"Batch input ids shape: {batch['input_ids'].shape}")
+    print(f"Batch attention mask shape: {batch['attention_mask'].shape}")
     break
 
 class Head(nn.Module):
     """One head of self-attention"""
     def __init__(self, head_size, n_embed, block_size, dropout):
         super().__init__()
-        self.key = nn.linear(n_embed, head_size, bias=False)
-        self.query = nn.linear(n_embed, head_size, bias=False)
+        self.key = nn.Linear(n_embed, head_size, bias=False)
+        self.query = nn.Linear(n_embed, head_size, bias=False)
         self.value = nn.Linear(n_embed, head_size, bias=False)
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
 
