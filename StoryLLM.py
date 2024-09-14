@@ -112,16 +112,16 @@ class MultiHeadAttention(nn.Module):
     def __init__(self, n_heads, head_size, n_embed, dropout):
         super().__init__()
         self.heads = nn.ModuleList([Head(head_size, n_embed, block_size, dropout) for _ in range(n_heads)])
-        self.Linear = nn.Linear(n_heads *  head_size, n_embed)
+        self.proj = nn.Linear(n_heads *  head_size, n_embed)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         # Collects the outputs from each head
         head_outputs = [head(x) for head in self.heads]
-        # Concatinate the outputs
-        concatinated = torch.cat(head_outputs, dim=1)
+        # Concatenate the outputs
+        concatenated = torch.cat(head_outputs, dim=-1)
         # Apply linear transformation and dropout
-        out = nn.Linear(concatinated)
+        out = self.proj(concatenated)
         out = self.dropout(out)
         return out
 
