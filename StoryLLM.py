@@ -80,7 +80,7 @@ for batch in train_loader:
     break
 
 class Head(nn.Module):
-    """One head of self-attention"""
+    """ One head of self-attention """
     def __init__(self, head_size, n_embed, block_size, dropout):
         super().__init__()
         self.key = nn.Linear(n_embed, head_size, bias=False)
@@ -104,5 +104,24 @@ class Head(nn.Module):
         wei = self.dropout(wei)
 
         out = wei @ v
+        return out
+
+class MultiHeadAttention(nn.Module):
+    """ Multiple heads of self-attention in parallel """
+
+    def __init__(self, n_heads, head_size, n_embed, dropout):
+        super().__init__()
+        self.heads = nn.ModuleList([Head(head_size, n_embed, block_size, dropout) for _ in range(n_heads)])
+        self.Linear = nn.Linear(n_heads *  head_size, n_embed)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x):
+        # Collects the outputs from each head
+        head_outputs = [head(x) for head in self.heads]
+        # Concatinate the outputs
+        concatinated = torch.cat(head_outputs, dim=1)
+        # Apply linear transformation and dropout
+        out = nn.Linear(concatinated)
+        out = self.dropout(out)
         return out
 
