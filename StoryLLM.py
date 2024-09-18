@@ -79,7 +79,7 @@ for batch in train_loader:
     print(f"Batch attention mask shape: {batch['attention_mask'].shape}")
     break
 
-# Defining model
+# Define model
 class Head(nn.Module):
     """ One head of self-attention """
     def __init__(self, head_size, n_embed, block_size, dropout):
