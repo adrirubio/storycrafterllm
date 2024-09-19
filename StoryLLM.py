@@ -130,7 +130,7 @@ class MultiHeadAttention(nn.Module):
 class FeedForward(nn.Module):
     """ A simple linear layer followed by non-linearity """
 
-    def __init__(self, n_embd, dropout=0.1, expansion_factor=4):
+    def __init__(self, n_embed, dropout=0.1, expansion_factor=4):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(n_embed, expansion_factor * n_embed),
