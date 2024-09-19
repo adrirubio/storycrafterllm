@@ -11,7 +11,7 @@ from datetime import datetime
 # Define hyperparameters
 n_heads = 8
 head_size = 64
-n_embed = 512
+n_embd = 512
 block_size = 128
 dropout = 0.1
 
@@ -82,11 +82,11 @@ for batch in train_loader:
 # Define model
 class Head(nn.Module):
     """ One head of self-attention """
-    def __init__(self, head_size, n_embed, block_size, dropout):
+    def __init__(self, head_size, n_embd, block_size, dropout):
         super().__init__()
-        self.key = nn.Linear(n_embed, head_size, bias=False)
-        self.query = nn.Linear(n_embed, head_size, bias=False)
-        self.value = nn.Linear(n_embed, head_size, bias=False)
+        self.key = nn.Linear(n_embd, head_size, bias=False)
+        self.query = nn.Linear(n_embd, head_size, bias=False)
+        self.value = nn.Linear(n_embd, head_size, bias=False)
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
 
         self.dropout = nn.Dropout(dropout)
@@ -110,10 +110,10 @@ class Head(nn.Module):
 class MultiHeadAttention(nn.Module):
     """ Multiple heads of self-attention in parallel """
 
-    def __init__(self, n_heads, head_size, n_embed, dropout):
+    def __init__(self, n_heads, head_size, n_embd, dropout):
         super().__init__()
-        self.heads = nn.ModuleList([Head(head_size, n_embed, block_size, dropout) for _ in range(n_heads)])
-        self.proj = nn.Linear(n_heads *  head_size, n_embed)
+        self.heads = nn.ModuleList([Head(head_size, n_embd, block_size, dropout) for _ in range(n_heads)])
+        self.proj = nn.Linear(n_heads *  head_size, n_embd)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -130,14 +130,22 @@ class MultiHeadAttention(nn.Module):
 class FeedForward(nn.Module):
     """ A simple linear layer followed by non-linearity """
 
-    def __init__(self, n_embed, dropout=0.1, expansion_factor=4):
+    def __init__(self, n_embd, dropout=0.1, expansion_factor=4):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(n_embed, expansion_factor * n_embed),
+            nn.Linear(n_embd, expansion_factor * n_embd),
             nn.ReLU(),
-            nn.Linear(expansion_factor * n_embed, n_embed),
+            nn.Linear(expansion_factor * n_embd, n_embd),
             nn.Dropout(dropout),
         )
 
     def forward(self, x):
         return self.net(x)
+
+class Block(nn.Module):
+    """ Transformer block: communication followed by computation """
+
+    def __init__(self, n_embd, n_head):
+        # n_embed: embedding dimension, n_head: the number of heads we'd like
+        super().__init__()
+        head_size = n_embd
