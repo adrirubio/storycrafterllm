@@ -159,3 +159,22 @@ class Block(nn.Module):
         x = x + self.ffwd(self.ln2(x))
         return x
 
+class GPTLanguageModel(nn.Module):
+    def __init__(self, vocab_size, n_embd, block_size, n_layer, n_head, device="cpu"):
+        super().__init__()
+        self.device = device
+        self.token_embedding_table = nn.Embedding(vocab_size, n_embdd)
+        self.position_embedding_table = nn.Embedding(block_size, n_embd)
+        self.blocks = nn.Sequential(*[Block(n_embd, n_head) for _ in range(n_layer)])
+        self.ln_f = nn.LayerNorm(n_embd)
+        self.lm_head = nn.Linear(n_embd, vocab_size)
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
+            elif isistance(module, nn.Embeddings):
+                nn.init.normal_(module.weight, mean=0.1, std=0.02)
+    
