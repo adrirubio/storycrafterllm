@@ -163,6 +163,7 @@ class GPTLanguageModel(nn.Module):
     def __init__(self, vocab_size, n_embd, block_size, n_layer, n_head, device="cpu"):
         super().__init__()
         self.device = device
+        self.block_size = block_size
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
         self.blocks = nn.Sequential(*[Block(n_embd, n_head) for _ in range(n_layer)])
@@ -175,18 +176,18 @@ class GPTLanguageModel(nn.Module):
             nn.init.normal_(module.weight, mean=0.0, std=0.02)
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
-            elif isinstance(module, nn.Embedding):
-                nn.init.normal_(module.weight, mean=0.1, std=0.02)
+        elif isinstance(module, nn.Embedding):
+            nn.init.normal_(module.weight, mean=0.1, std=0.02)
 
     def forward(self, idx, targets=None):
         B, T = idx.shape
 
-        tok_emb = self.token_embedding_table(idx).to(self.device) # (B, T, C)
-        pos_emb = self.position_embedding_table(torch.arange(T, device=self.device)).unsqueeze(0) # (1, T, C)
-        x = tok_emb + pos_emb # (B, T, C)
-        x = self.blocks(x) # (B, T, C)
-        x = self.lm_f(x) # (B, T, C)
-        logits = self.ln_head(x) # (B, T, vocab_size)
+        tok_emb = self.token_embedding_table(idx)  # (B, T, C)
+        pos_emb = self.position_embedding_table(torch.arange(T, device=idx.device))  # (T, C)
+        x = tok_emb + pos_emb.unsqueeze(0)  # (B, T, C)
+        x = self.blocks(x)  # (B, T, C)
+        x = self.ln_f(x)  # (B, T, C)
+        logits = self.lm_head(x)  # (B, T, vocab_size)
 
         loss = None
         if targets is not None:
@@ -200,11 +201,11 @@ class GPTLanguageModel(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_new_tokens):
         for _ in range(max_new_tokens):
-            idx_cond = idx[:, -block_size:] # Crop to the last block_size tokens
-            logits, _ = self(idx_cond) # Get Predictions
-            logits = logits[:, -1, :] # Focus on the last time step
-            probs = F.softmax(logits, dim=1) # Get probabilities
-            idx_next = torch.multinomial(probs, num_samples=1) # Samples from the distribution
-            idx = torch.cat((idx, idx_next), dim=1) # Append sampled index
+            idx_cond = idx[:, -self.block_size:]  # Crop to the last block_size tokens
+            logits, _ = self(idx_cond)  # Get Predictions
+            logits = logits[:, -1, :]  # Focus on the last time step
+            probs = F.softmax(logits, dim=-1)  # Get probabilities
+            idx_next = torch.multinomial(probs, num_samples=1)  # Samples from the distribution
+            idx = torch.cat((idx, idx_next), dim=1)  # Append sampled index
         return idx
 
