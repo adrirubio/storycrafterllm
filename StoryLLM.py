@@ -177,4 +177,24 @@ class GPTLanguageModel(nn.Module):
                 nn.init.zeros_(module.bias)
             elif isistance(module, nn.Embeddings):
                 nn.init.normal_(module.weight, mean=0.1, std=0.02)
+
+    def forward(self, idx, targets=None):
+        B, T = idx.shape
+
+        tok_emb = self.token_embedding_table(idx).to(self.device) # (B, T, C)
+        pos_emb = self.position_embedding_table(torch.arange(T, device=self.device)).unsqueeze(0) # (1, T, C)
+        x = tok_emb + pos_emd # (B, T, C)
+        x = self.blocks(x) # (B, T, C)
+        x = self.ln_f(x) # (B, T, C)
+        logits = self.ln_head(x) # (B, T, vocab_size)
+
+        loss = None
+        if targets is not None:
+            B, T, C = logits.shape
+            logits = logits.view(B * T, C)
+            targets = targets.view(B * T)
+            loss = F.cross_entropy(logits, targets)
+
+        return logits, loss
+
     
