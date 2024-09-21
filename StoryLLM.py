@@ -238,9 +238,53 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
         t0 = datetime.now()
         train_loss = []
         for batch in train_loader:
-            inputs = batch["inputs_ids"].to(device)
+            inputs = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
 
             # Create targets by shifting inputs by one position
             targets = inputs[:, 1:].contiguous()
-            inpust = inputs[:, :-1].congiguous()
+            inputs = inputs[:, :-1].contiguous()
+
+            # Zero parameter gradients
+            optimizer.zero_grad()
+
+            # Forward pass
+            outputs, loss = model(inputs, targets)
+
+            # backward and optimize
+            loss.backward()
+            optimizer.step()
+
+            train_loss.append(loss.item())
+
+        # Get train_loss and test_loss
+        train_loss = np.mean(train_loss) # a little misleading
+
+        model.eval() # Set model to evaluation mode
+        test_loss = []
+        with torch.no_grad():
+            for batch in test_loader:
+                inputs = batch["input_ids"].to(device)
+                attention_mask = batch["attention_mask"].to(device)
+
+                # Create targets by shifting inputs by one position
+                targets = inputs[:, 1:].contiguous()
+                inputs = inputs[:, -1:].contiguous()
+
+                outputs, loss = model(inputs, targets)
+                test_loss.append(loss.item())
+
+            test_loss = np.mean(test_loss)
+
+            # Save losses
+            train_losses[it] = train_loss
+            test_losses[it] = test_loss
+
+            dt = datetime.now() - t0
+            print(f'Epoch {it+1}/{epochs}, Train Loss: {train_loss:.4f}, \
+            Test Loss: {test_loss:.4f}, Duration: {dt}')
+
+    return train_losses, test_losses
+
+batch_gd = (model)
+
