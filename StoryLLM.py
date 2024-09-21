@@ -286,5 +286,6 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
     return train_losses, test_losses
 
-batch_gd = (model)
+train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=20)
+
 
