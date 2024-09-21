@@ -228,3 +228,19 @@ model = model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+# Training loop
+def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
+    train_losses[it] = np.zeros(epochs)
+    test_losses[it] = np.zeros(epochs)
+
+    for it in range(epochs):
+        model.train() # Set model to training mode
+        t0 = datetime.now()
+        train_loss = []
+        for batch in train_loader:
+            inputs = batch["inputs_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+
+            # Create targets by shifting inputs by one position
+            targets = inputs[:, 1:].contiguous()
+            inpust = inputs[:, :-1].congiguous()
