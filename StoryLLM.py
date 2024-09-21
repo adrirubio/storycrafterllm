@@ -289,5 +289,12 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=20)
 
 # Plot loss
+plt.plot(train_losses, label="train_loss")
+plt.plot(test_losses, label="test_loss")
+plt.legend()
+plt.show()
 
-
+# Save model
+model_save_path = "/home/adrian/Documents/StoryCrafterLLM/model_weights"
+torch.save(model.save_dict(), model_save_path)
+print(f"Model saved to {model_save_path}")
