@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
 import torch.optim as optim
 from transformers import GPT2Tokenizer
@@ -9,11 +10,15 @@ import numpy as np
 from datetime import datetime
 
 # Define hyperparameters
+vocab_size = 50257
 n_heads = 8
+n_layers = 6
 head_size = 64
 n_embd = 512
 block_size = 128
 dropout = 0.1
+learning_rate = 3e-4
+weight_decay = 0.1
 
 # load the BookCorpus dataset
 dataset = load_dataset("bookcorpus")
@@ -208,4 +213,18 @@ class GPTLanguageModel(nn.Module):
             idx_next = torch.multinomial(probs, num_samples=1)  # Samples from the distribution
             idx = torch.cat((idx, idx_next), dim=1)  # Append sampled index
         return idx
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print (f"Using device: {device}")
+
+
+# Instantiate the model
+model = GPTLanguageModel(vocab_size, n_embd, block_size, n_layers, n_heads, device=device)
+
+# Move the model to the GPU (if available)
+model = model.to(device)
+
+# Loss_fn and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
