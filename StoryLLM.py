@@ -288,4 +288,6 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
 train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=20)
 
+# Plot loss
+
 
