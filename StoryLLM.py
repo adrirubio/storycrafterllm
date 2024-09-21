@@ -230,11 +230,11 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Training loop
 def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
-    train_losses[it] = np.zeros(epochs)
-    test_losses[it] = np.zeros(epochs)
+    train_losses = np.zeros(epochs)  # Initialize arrays here
+    test_losses = np.zeros(epochs)
 
     for it in range(epochs):
-        model.train() # Set model to training mode
+        model.train()  # Set model to training mode
         t0 = datetime.now()
         train_loss = []
         for batch in train_loader:
@@ -251,16 +251,16 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
             # Forward pass
             outputs, loss = model(inputs, targets)
 
-            # backward and optimize
+            # Backward and optimize
             loss.backward()
             optimizer.step()
 
             train_loss.append(loss.item())
 
-        # Get train_loss and test_loss
-        train_loss = np.mean(train_loss) # a little misleading
+        # Get average train_loss
+        train_loss = np.mean(train_loss)
 
-        model.eval() # Set model to evaluation mode
+        model.eval()  # Set model to evaluation mode
         test_loss = []
         with torch.no_grad():
             for batch in test_loader:
@@ -269,20 +269,20 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
                 # Create targets by shifting inputs by one position
                 targets = inputs[:, 1:].contiguous()
-                inputs = inputs[:, -1:].contiguous()
+                inputs = inputs[:, :-1].contiguous()  # Corrected
 
                 outputs, loss = model(inputs, targets)
                 test_loss.append(loss.item())
 
             test_loss = np.mean(test_loss)
 
-            # Save losses
-            train_losses[it] = train_loss
-            test_losses[it] = test_loss
+        # Save losses
+        train_losses[it] = train_loss
+        test_losses[it] = test_loss
 
-            dt = datetime.now() - t0
-            print(f'Epoch {it+1}/{epochs}, Train Loss: {train_loss:.4f}, \
-            Test Loss: {test_loss:.4f}, Duration: {dt}')
+        dt = datetime.now() - t0
+        print(f'Epoch {it + 1}/{epochs}, Train Loss: {train_loss:.4f}, \
+              Test Loss: {test_loss:.4f}, Duration: {dt}')
 
     return train_losses, test_losses
 
@@ -295,6 +295,6 @@ plt.legend()
 plt.show()
 
 # Save model
-model_save_path = "/home/adrian/Documents/StoryCrafterLLM/model_weights"
-torch.save(model.save_dict(), model_save_path)
+model_save_path = "/home/adrian/Documents/StoryCrafterLLM/model_weights.pth"
+torch.save(model.state_dict(), model_save_path)  # Corrected save method
 print(f"Model saved to {model_save_path}")
