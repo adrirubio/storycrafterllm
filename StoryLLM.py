@@ -294,7 +294,7 @@ plt.plot(test_losses, label="test_loss")
 plt.legend()
 plt.show()
 
-# Save model
+# Save model weights
 model_save_path = "/home/adrian/Documents/StoryCrafterLLM/model_weights.pth"
 torch.save(model.state_dict(), model_save_path)  # Corrected save method
 print(f"Model saved to {model_save_path}")
