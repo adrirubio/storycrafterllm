@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import torch.optim as optim
 from transformers import GPT2Tokenizer
 from datasets import load_dataset
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
+import os
 
 # Define hyperparameters
 vocab_size = 50257
@@ -20,11 +20,12 @@ dropout = 0.1
 learning_rate = 3e-4
 weight_decay = 0.1
 
-# Set Hugging Face datasets cache directory
+# Set Hugging Face cache directories on the external disk
 os.environ['HF_HOME'] = '/media/adrian/FamilyBackup/adrian_ai_workspace/hf_cache'
+os.environ['HF_DATASETS_CACHE'] = '/media/adrian/FamilyBackup/adrian_ai_workspace/datasets_cache'
 
-# load the BookCorpus dataset
-dataset = load_dataset("bookcorpus")
+# Load the BookCorpus dataset and ensure it's cached on the external disk
+dataset = load_dataset("bookcorpus", cache_dir='/media/adrian/FamilyBackup/adrian_ai_workspace/datasets_cache')
 
 # Split the dataset into train and test sets
 split_dataset = dataset["train"].train_test_split(test_size=0.1)
@@ -57,8 +58,11 @@ def tokenize_batch(batch):
 
 # Tokenize the datasets and save to disk
 def tokenize_and_save(dataset, split_name):
-    # Apply tokenization
-    tokenized_dataset = dataset.map(tokenize_batch, batched=True, remove_columns=["text"])
+    # Apply tokenization and store intermediate results in external disk
+    tokenized_dataset = dataset.map(tokenize_batch,
+                                    batched=True,
+                                    remove_columns=["text"],
+                                    cache_file_name=f"/media/adrian/FamilyBackup/adrian_ai_workspace/datasets_cache/tokenized_{split_name}.arrow")
 
     # Save the tokenized dataset to the specified directory
     tokenized_dataset.save_to_disk(os.path.join(save_dir, split_name))
