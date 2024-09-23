@@ -25,7 +25,7 @@ os.environ['HF_HOME'] = '/media/adrian/FamilyBackup/adrian_ai_workspace/hf_cache
 os.environ['HF_DATASETS_CACHE'] = '/media/adrian/FamilyBackup/adrian_ai_workspace/datasets_cache'
 
 # Load the BookCorpus dataset and ensure it's cached on the external disk
-dataset = load_dataset("bookcorpus", cache_dir='/media/adrian/FamilyBackup/adrian_ai_workspace/datasets_cache')
+dataset = load_dataset("bookcorpus", cache_dir='/media/adrian/FamilyBackup/adrian_ai_workspace/')
 
 # Split the dataset into train and test sets
 split_dataset = dataset["train"].train_test_split(test_size=0.1)
