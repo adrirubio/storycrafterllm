@@ -20,6 +20,9 @@ dropout = 0.1
 learning_rate = 3e-4
 weight_decay = 0.1
 
+# Set Hugging Face datasets cache directory
+os.environ['HF_HOME'] = '/media/adrian/FamilyBackup/adrian_ai_workspace/hf_cache'
+
 # load the BookCorpus dataset
 dataset = load_dataset("bookcorpus")
 
@@ -36,6 +39,12 @@ print(f"Test size: {len(test_dataset)}")
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token
 
+# Directory where tokenized data will be stored
+save_dir = '/media/adrian/FamilyBackup/adrian_ai_workspace/tokenized_dataset/'
+
+# Ensure the directory exists
+os.makedirs(save_dir, exist_ok=True)
+
 # Define the tokenization function
 def tokenize_batch(batch):
     tokenized_output = tokenizer(
@@ -46,9 +55,19 @@ def tokenize_batch(batch):
     )
     return {"input_ids": tokenized_output["input_ids"], "attention_mask": tokenized_output["attention_mask"]}
 
-# Apply tokenization to the train and test datasets
-train_dataset = train_dataset.map(tokenize_batch, batched=True, batch_size=16, remove_columns=["text"])
-test_dataset = test_dataset.map(tokenize_batch, batched=True, batch_size=16, remove_columns=["text"])
+# Tokenize the datasets and save to disk
+def tokenize_and_save(dataset, split_name):
+    # Apply tokenization
+    tokenized_dataset = dataset.map(tokenize_batch, batched=True, remove_columns=["text"])
+
+    # Save the tokenized dataset to the specified directory
+    tokenized_dataset.save_to_disk(os.path.join(save_dir, split_name))
+
+    return tokenized_dataset
+
+# Tokenize and save both train and test datasets
+train_dataset = tokenize_and_save(train_dataset, "train")
+test_dataset = tokenize_and_save(test_dataset, "test")
 
 # Update dataset format to include input_ids and attention_mask
 train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
