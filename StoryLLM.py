@@ -247,7 +247,7 @@ model = GPTLanguageModel(vocab_size, n_embd, block_size, n_layers, n_heads, devi
 # Move the model to the GPU (if available)
 model = model.to(device)
 
-# Loss_fn and optimizer
+# Define criterion and optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -319,5 +319,5 @@ plt.show()
 
 # Save model weights
 model_save_path = "/home/adrian/Documents/StoryCrafterLLM/model_weights.pth"
-torch.save(model.state_dict(), model_save_path)  # Corrected save method
+torch.save(model.state_dict(), model_save_path)
 print(f"Model saved to {model_save_path}")
