@@ -36,7 +36,7 @@ test_dataset = split_dataset["test"]
 print(f"Train size: {len(train_dataset)}")
 print(f"Test size: {len(test_dataset)}")
 
-# Load the GPT-2 tokenizer
+# Load the GPT tokenizer
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token
 
