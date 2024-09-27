@@ -32,7 +32,7 @@ split_dataset = dataset["train"].train_test_split(test_size=0.1)
 train_dataset = split_dataset["train"]
 test_dataset = split_dataset["test"]
 
-# Print the size of the train and test sets
+# Print the size of the train and the test sets
 print(f"Train size: {len(train_dataset)}")
 print(f"Test size: {len(test_dataset)}")
 
