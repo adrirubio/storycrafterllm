@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import tiktoken  # New import
+import tiktoken
 from datasets import load_dataset
 import matplotlib.pyplot as plt
 import numpy as np
