@@ -326,7 +326,7 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
     return train_losses, test_losses
 
-train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=20)
+train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=10)
 
 # Plot loss
 plt.plot(train_losses, label="train_loss")
