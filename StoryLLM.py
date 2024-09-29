@@ -27,20 +27,15 @@ os.environ['HF_DATASETS_CACHE'] = '/media/adrian/FamilyBackup/adrian_ai_workspac
 # Load the BookCorpus dataset and ensure it's cached on the external disk
 dataset = load_dataset("bookcorpus", cache_dir='/media/adrian/FamilyBackup/adrian_ai_workspace/')
 
-# Select 10% of the dataset
-sample_size = int(0.10 * total_size)  # 10% of the entire dataset
-sampled_indices = np.random.choice(total_size, sample_size, replace=False)  # Random sampling
+# Keep only 10% of the dataset
+total_samples = len(dataset["train"])
+ten_percent_samples = int(total_samples * 0.1)
+dataset_subset = dataset["train"].select(range(ten_percent_samples))  # Select only the first 10%
 
-# Create a smaller dataset using the sampled indices
-sampled_dataset = dataset["train"].select(sampled_indices)
-
-# Calculate testing size as 20% of the sampled 10%
-test_size = int(0.20 * sample_size)  # 20% of the 10%
-train_size = sample_size - test_size  # Remaining for training
-
-# Create training and testing datasets
-train_dataset = sampled_dataset.select(range(train_size))  # 80% of 10% for training
-test_dataset = sampled_dataset.select(range(train_size, sample_size))  # 20% for testing
+# Split the subset into train (90%) and test (10%)
+split_dataset = dataset_subset.train_test_split(test_size=0.1)  # 10% for testing
+train_dataset = split_dataset["train"]
+test_dataset = split_dataset["test"]
 
 # Print the size of the train and the test sets
 print(f"Train size: {len(train_dataset)}")
