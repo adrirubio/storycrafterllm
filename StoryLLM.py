@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-from transformers import GPT2Tokenizer
+import tiktoken  # New import
 from datasets import load_dataset
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,70 +36,65 @@ test_dataset = split_dataset["test"]
 print(f"Train size: {len(train_dataset)}")
 print(f"Test size: {len(test_dataset)}")
 
-# Load the GPT tokenizer
-tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-tokenizer.pad_token = tokenizer.eos_token
-
-# Directory where tokenized data will be stored
-save_dir = '/media/adrian/FamilyBackup/adrian_ai_workspace/tokenized_dataset/'
-
-# Ensure the directory exists
-os.makedirs(save_dir, exist_ok=True)
+# Initialize the tiktoken encoder
+enc = tiktoken.get_encoding("gpt2")
 
 # Define the tokenization function
-def tokenize_batch(batch):
-    tokenized_output = tokenizer(
-        batch["text"],
-        padding="max_length",
-        truncation=True,
-        max_length=512
+def tokenize_function(examples):
+    return {
+        "input_ids": [enc.encode(text) for text in examples["text"]],
+        "attention_mask": [[1] * len(enc.encode(text)) for text in examples["text"]]
+    }
+
+# Function to pad or truncate sequences
+def pad_or_truncate(batch):
+    max_length = 512  # Adjust as needed
+    for key in ['input_ids', 'attention_mask']:
+        batch[key] = [
+            seq[:max_length] + [0] * (max_length - len(seq)) if len(seq) < max_length else seq[:max_length]
+            for seq in batch[key]
+        ]
+    return batch
+
+# Tokenize and process the datasets
+def process_dataset(dataset, split_name):
+    # Tokenize
+    tokenized_dataset = dataset.map(
+        tokenize_function,
+        batched=True,
+        num_proc=10,
+        remove_columns=dataset.column_names
     )
-    return {"input_ids": tokenized_output["input_ids"], "attention_mask": tokenized_output["attention_mask"]}
 
-# Tokenize the datasets and save to disk
-def tokenize_and_save(dataset, split_name):
-    # Apply tokenization and store intermediate results in external disk
-    tokenized_dataset = dataset.map(tokenize_batch,
-                                    batched=True,
-                                    remove_columns=["text"],
-                                    cache_file_name=f"/media/adrian/FamilyBackup/adrian_ai_workspace/datasets_cache/tokenized_{split_name}.arrow")
+    # Pad or truncate
+    processed_dataset = tokenized_dataset.map(
+        pad_or_truncate,
+        batched=True,
+        num_proc=10,
+    )
 
-    # Save the tokenized dataset to the specified directory
-    tokenized_dataset.save_to_disk(os.path.join(save_dir, split_name))
+    # Set format to PyTorch tensors
+    processed_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
 
-    return tokenized_dataset
+    return processed_dataset
 
-# Tokenize and save both train and test datasets
-train_dataset = tokenize_and_save(train_dataset, "train")
-test_dataset = tokenize_and_save(test_dataset, "test")
-
-# Update dataset format to include input_ids and attention_mask
-train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
-test_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
+# Process both train and test datasets
+train_dataset = process_dataset(train_dataset, "train")
+test_dataset = process_dataset(test_dataset, "test")
 
 # Print some examples
 print(f"Example train data: {train_dataset[0]}")
 print(f"Example test data: {test_dataset[0]}")
 
+# Create DataLoaders
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=8, shuffle=True)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=8, shuffle=False)
 
-# Create a custom collate function
-def collate_fn(batch):
-    input_ids = torch.stack([item["input_ids"] for item in batch])
-    attention_mask = torch.stack([item["attention_mask"] for item in batch])
-    return {"input_ids": input_ids, "attention_mask": attention_mask}
-
-# Create batches
-batch_size = 8
-
-train_loader = torch.utils.data.DataLoader(train_dataset,
-                                           batch_size=batch_size,
-                                           shuffle=True,
-                                           collate_fn=collate_fn)
-
-test_loader = torch.utils.data.DataLoader(test_dataset,
-                                          batch_size=batch_size,
-                                          shuffle=False,
-                                          collate_fn=collate_fn)
+# Print an example batch
+for batch in train_loader:
+    print(f"Batch input ids shape: {batch['input_ids'].shape}")
+    print(f"Batch attention mask shape: {batch['attention_mask'].shape}")
+    break
 
 # Print an example batch
 for batch in train_loader:
@@ -209,6 +204,10 @@ class GPTLanguageModel(nn.Module):
 
     def forward(self, idx, targets=None):
         B, T = idx.shape
+
+        # Truncate sequence length to block_size
+        T = min(T, self.block_size)
+        idx = idx[:, :T]
 
         # Get token embeddings for input indices
         tok_emb = self.token_embedding_table(idx)  # (B, T, C)
