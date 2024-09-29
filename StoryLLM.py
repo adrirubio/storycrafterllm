@@ -220,10 +220,6 @@ class GPTLanguageModel(nn.Module):
         # Get position embeddings (truncate to match input length)
         pos_emb = self.position_embedding_table(torch.arange(T, device=idx.device))  # (T, C)
 
-        # Check the shapes for debugging purposes
-        print(f"tok_emb shape: {tok_emb.shape}")  # Should be (B, T, C)
-        print(f"pos_emb shape: {pos_emb.unsqueeze(0).shape}")  # Should be (1, T, C)
-
         # Combine token and position embeddings
         x = tok_emb + pos_emb.unsqueeze(0)  # (B, T, C)
 
@@ -239,13 +235,14 @@ class GPTLanguageModel(nn.Module):
         # Optionally calculate loss if targets are provided
         loss = None
         if targets is not None:
+            # Ensure targets are the same size as logits
+            targets = targets[:, :T]
             B, T, C = logits.shape
-            logits = logits.view(B * T, C)  # Reshape for cross-entropy loss
-            targets = targets.view(B * T)   # Flatten target tensor
+            logits = logits.view(B*T, C)
+            targets = targets.view(B*T)
             loss = F.cross_entropy(logits, targets)
 
-            return logits, loss
-
+        return logits, loss
 
     @torch.no_grad()
     def generate(self, idx, max_new_tokens):
