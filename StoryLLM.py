@@ -238,8 +238,8 @@ class GPTLanguageModel(nn.Module):
             # Ensure targets are the same size as logits
             targets = targets[:, :T]
             B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
+            logits = logits.reshape(B*T, C)
+            targets = targets.reshape(B*T)
             loss = F.cross_entropy(logits, targets)
 
         return logits, loss
@@ -257,7 +257,6 @@ class GPTLanguageModel(nn.Module):
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 print (f"Using device: {device}")
-
 
 # Instantiate the model
 model = GPTLanguageModel(vocab_size, n_embd, block_size, n_layers, n_heads, device=device)
