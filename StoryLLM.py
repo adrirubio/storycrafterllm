@@ -29,7 +29,7 @@ dataset = load_dataset("bookcorpus", cache_dir='/media/adrian/FamilyBackup/adria
 
 # Keep only 10% of the dataset
 total_samples = len(dataset["train"])
-one_percent_samples = int(total_samples * 0.01)
+one_percent_samples = int(total_samples * 0.001)
 dataset_subset = dataset["train"].select(range(one_percent_samples))  # Select only the first 1%
 
 # Split the subset into train (90%) and test (10%)
@@ -326,7 +326,7 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
     return train_losses, test_losses
 
-train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=5)
+train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=2)
 
 # Plot loss
 plt.plot(train_losses, label="train_loss")
