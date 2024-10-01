@@ -53,7 +53,7 @@ def tokenize_function(examples):
 
 # Function to pad or truncate sequences
 def pad_or_truncate(batch):
-    max_length = 512  # Adjust as needed
+    max_length = 512
     for key in ['input_ids', 'attention_mask']:
         batch[key] = [
             seq[:max_length] + [0] * (max_length - len(seq)) if len(seq) < max_length else seq[:max_length]
@@ -67,7 +67,7 @@ def process_dataset(dataset, split_name):
     tokenized_dataset = dataset.map(
         tokenize_function,
         batched=True,
-        num_proc=10,
+        num_proc=20,
         remove_columns=dataset.column_names
     )
 
@@ -75,7 +75,7 @@ def process_dataset(dataset, split_name):
     processed_dataset = tokenized_dataset.map(
         pad_or_truncate,
         batched=True,
-        num_proc=10,
+        num_proc=20,
     )
 
     # Set format to PyTorch tensors
