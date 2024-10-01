@@ -268,16 +268,17 @@ model = model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-# Training loop
+# Training loop with progress reporting
 def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
-    train_losses = np.zeros(epochs)  # Initialize arrays here
+    train_losses = np.zeros(epochs)
     test_losses = np.zeros(epochs)
 
     for it in range(epochs):
         model.train()  # Set model to training mode
         t0 = datetime.now()
         train_loss = []
-        for batch in train_loader:
+
+        for i, batch in enumerate(train_loader):
             inputs = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
 
@@ -297,6 +298,10 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
             train_loss.append(loss.item())
 
+            # Print progress every 100 batches
+            if (i + 1) % 100 == 0:
+                print(f'Epoch {it + 1}/{epochs}, Batch {i + 1}/{len(train_loader)}, Loss: {loss.item():.4f}')
+
         # Get average train_loss
         train_loss = np.mean(train_loss)
 
@@ -309,7 +314,7 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
 
                 # Create targets by shifting inputs by one position
                 targets = inputs[:, 1:].contiguous()
-                inputs = inputs[:, :-1].contiguous()  # Corrected
+                inputs = inputs[:, :-1].contiguous()
 
                 outputs, loss = model(inputs, targets)
                 test_loss.append(loss.item())
@@ -321,11 +326,12 @@ def batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs):
         test_losses[it] = test_loss
 
         dt = datetime.now() - t0
-        print(f'Epoch {it + 1}/{epochs}, Train Loss: {train_loss:.4f}, \
-              Test Loss: {test_loss:.4f}, Duration: {dt}')
+        print(f'Epoch {it + 1}/{epochs}, Train Loss: {train_loss:.4f}, '
+              f'Test Loss: {test_loss:.4f}, Duration: {dt}')
 
     return train_losses, test_losses
 
+# Run the training
 train_losses, test_losses = batch_gh(model, criterion, optimizer, train_loader, test_loader, epochs=2)
 
 # Plot loss
