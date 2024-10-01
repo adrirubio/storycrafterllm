@@ -29,8 +29,8 @@ dataset = load_dataset("bookcorpus", cache_dir='/media/adrian/FamilyBackup/adria
 
 # Keep only 10% of the dataset
 total_samples = len(dataset["train"])
-five_percent_samples = int(total_samples * 0.05)
-dataset_subset = dataset["train"].select(range(five_percent_samples))  # Select only the first 5%
+one_percent_samples = int(total_samples * 0.01)
+dataset_subset = dataset["train"].select(range(one_percent_samples))  # Select only the first 1%
 
 # Split the subset into train (90%) and test (10%)
 split_dataset = dataset_subset.train_test_split(test_size=0.1)  # 10% for testing
