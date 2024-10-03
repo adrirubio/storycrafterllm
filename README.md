@@ -9,5 +9,5 @@ It's my first LLM and I am happy with the result.
 
 ---
 
-#### Try the model: https://huggingface.co/spaces/pro-grammer/StoryCrafterLLM
+#### Try the model at: https://huggingface.co/spaces/pro-grammer/StoryCrafterLLM
 
