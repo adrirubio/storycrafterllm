@@ -5,8 +5,9 @@ Because StoryCrafterLLM was trained on a portion of the bookcorpus dataset it so
 ---
 
 This model is very crazy but funny!
-#### Try the model: https://huggingface.co/spaces/pro-grammer/StoryCrafterLLM
 It's my first LLM and I am happy with the result.
 
 ---
+
+#### Try the model: https://huggingface.co/spaces/pro-grammer/StoryCrafterLLM
 
